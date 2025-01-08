@@ -4,7 +4,6 @@ import CounterApp from "./Components/Counter";
 function App() {
   return (
     <>
-      <div>HI</div>
       <CounterApp />
     </>
   );

@@ -1,16 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ethers } from "ethers";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaWallet, FaMinus, FaPlus, FaEthereum } from "react-icons/fa";
 
 const counterABI = [
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "user",
-        type: "address",
-      },
+      { indexed: true, internalType: "address", name: "user", type: "address" },
       {
         indexed: false,
         internalType: "uint256",
@@ -38,17 +35,13 @@ const counterABI = [
   {
     inputs: [],
     name: "getCount",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
 ];
+
+const CONTRACT_ADDRESS = "0xFf91aCd4f34a8EC81535C88b76976D2F4A572F8b";
 
 const CounterApp = () => {
   const [count, setCount] = useState(0);
@@ -58,7 +51,14 @@ const CounterApp = () => {
   const [gasEstimate, setGasEstimate] = useState(null);
   const [error, setError] = useState("");
 
-  const CONTRACT_ADDRESS = "0xFf91aCd4f34a8EC81535C88b76976D2F4A572F8b";
+  useEffect(() => {
+    const checkWalletConnection = async () => {
+      if (window.ethereum && window.ethereum.selectedAddress) {
+        await connectWallet();
+      }
+    };
+    checkWalletConnection();
+  }, []);
 
   const connectWallet = async () => {
     try {
@@ -130,139 +130,97 @@ const CounterApp = () => {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "400px",
-        margin: "0 auto",
-        padding: "20px",
-        boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-        borderRadius: "8px",
-        backgroundColor: "white",
-      }}
-    >
-      <h1
-        style={{
-          textAlign: "center",
-          fontSize: "24px",
-          fontWeight: "bold",
-          marginBottom: "20px",
-        }}
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-md"
       >
-        Web3 Counter
-      </h1>
+        <h1 className="text-3xl font-bold text-center text-white mb-8">
+          Web3 Counter
+        </h1>
 
-      <div style={{ padding: "20px" }}>
         {!wallet ? (
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={connectWallet}
-            style={{
-              width: "100%",
-              padding: "10px",
-              backgroundColor: "#3b82f6",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-            }}
+            className="w-full py-3 px-4 bg-blue-600 text-white rounded-md font-medium flex items-center justify-center space-x-2 hover:bg-blue-700 transition duration-200"
           >
-            Connect Wallet
-          </button>
+            <FaWallet className="text-xl" />
+            <span>Connect Wallet</span>
+          </motion.button>
         ) : (
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-          >
-            <div
-              style={{
-                fontSize: "14px",
-                color: "#666",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
+          <div className="space-y-6">
+            <div className="text-sm text-gray-400 truncate">
               Connected: {wallet}
             </div>
 
-            {error && (
-              <div
-                style={{
-                  padding: "12px",
-                  backgroundColor: "#fee2e2",
-                  color: "#dc2626",
-                  borderRadius: "4px",
-                  fontSize: "14px",
-                }}
-              >
-                {error}
-              </div>
-            )}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-red-900 text-red-200 p-4 rounded-md text-sm"
+                >
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <div
-              style={{
-                textAlign: "center",
-                fontSize: "36px",
-                fontWeight: "bold",
-                padding: "16px 0",
-              }}
+            <motion.div
+              key={count}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="text-6xl font-bold text-center text-white py-8"
             >
               {count}
-            </div>
+            </motion.div>
 
             {gasEstimate && (
-              <div
-                style={{
-                  textAlign: "center",
-                  fontSize: "14px",
-                  color: "#666",
-                }}
-              >
+              <div className="text-center text-sm text-gray-400">
+                <FaEthereum className="inline mr-1" />
                 Estimated gas fee: {parseFloat(gasEstimate).toFixed(8)} ETH
               </div>
             )}
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: "16px",
-              }}
-            >
-              <button
+            <div className="flex justify-center space-x-4">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleDecrement}
                 disabled={loading || count === 0}
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: loading || count === 0 ? "#ccc" : "#3b82f6",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: loading || count === 0 ? "not-allowed" : "pointer",
-                }}
+                className={`py-3 px-6 rounded-md font-medium flex items-center justify-center space-x-2 transition duration-200 ${
+                  loading || count === 0
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    : "bg-red-600 text-white hover:bg-red-700"
+                }`}
               >
-                Decrease
-              </button>
+                <FaMinus />
+                <span>Decrease</span>
+              </motion.button>
 
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleIncrement}
                 disabled={loading}
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: loading ? "#ccc" : "#3b82f6",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: loading ? "not-allowed" : "pointer",
-                }}
+                className={`py-3 px-6 rounded-md font-medium flex items-center justify-center space-x-2 transition duration-200 ${
+                  loading
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    : "bg-green-600 text-white hover:bg-green-700"
+                }`}
               >
-                Increase
-              </button>
+                <FaPlus />
+                <span>Increase</span>
+              </motion.button>
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };
